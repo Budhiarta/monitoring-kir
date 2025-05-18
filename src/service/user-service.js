@@ -79,6 +79,76 @@ const userService = {
     };
   },
 
+  loginWeb: async (req) => {
+    const loginRequest = validate(loginUserValidation, req);
+
+    const user = await prismaClient.user.findUnique({
+      where: {
+        email: loginRequest.username,
+      },
+      select: {
+        id: true,
+        username: true,
+        password: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      throw new ResponseError(401, "username or password invalid");
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      loginRequest.password,
+      user.password
+    );
+    if (!isPasswordValid) {
+      throw new ResponseError(401, "username or password invalid");
+    }
+
+    // Cek apakah sudah melakukan monitoring hari ini
+    const today = new Date().toISOString().split("T")[0];
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const monitoring = await prismaClient.monitoring.findFirst({
+      where: {
+        Date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    });
+
+    if (!monitoring) {
+      throw new ResponseError(
+        403,
+        "Anda belum melakukan monitoring hari ini. Silakan monitoring melalui aplikasi."
+      );
+    }
+
+    const token = jwt.sign(
+      {
+        username: user.username,
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    return {
+      message: "login web successfull",
+      token,
+      user: {
+        username: user.username,
+        email: user.email,
+      },
+    };
+  },
+
   getAllUsers: async () => {
     return await prismaClient.user.findMany({
       data: user,

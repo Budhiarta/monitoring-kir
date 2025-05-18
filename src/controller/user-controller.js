@@ -22,6 +22,17 @@ const login = async (req, res, next) => {
   }
 };
 
+const loginWeb = async (req, res, next) => {
+  try {
+    const result = await userService.loginWeb(req.body);
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const getUsers = async (res, next) => {
   try {
     const result = await userService.getAllUsers();
@@ -36,5 +47,6 @@ const getUsers = async (res, next) => {
 export default {
   register,
   login,
+  loginWeb,
   getUsers,
 };

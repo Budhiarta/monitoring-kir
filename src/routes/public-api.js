@@ -6,6 +6,7 @@ const publicRouter = new express.Router();
 //user
 publicRouter.post("/user", userController.register);
 publicRouter.post("/user/login", userController.login);
+publicRouter.post("/user/login-web", userController.loginWeb);
 publicRouter.post("/user/getAllUsers", userController.login);
 
 //Device
