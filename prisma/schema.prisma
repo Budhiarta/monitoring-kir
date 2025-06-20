@@ -30,6 +30,8 @@ model Device {
   updatedAt DateTime @updatedAt
 
   monitorings Monitoring[]  // 1 Device bisa punya banyak Monitoring
+
+  Task Task[]
 }
 
 model Monitoring {
@@ -49,4 +51,27 @@ model Monitoring {
   // Foreign key ke Device
   deviceId Int
   device Device @relation(fields: [deviceId], references: [id])
+
+  checkedTasks CheckedTask[]
+}
+
+model CheckedTask {
+  id           Int        @id @default(autoincrement())
+  taskId       Int
+  task         Task       @relation(fields: [taskId], references: [id])
+
+  monitoringId Int
+  monitoring   Monitoring @relation(fields: [monitoringId], references: [id])
+
+  checked      Boolean
+}
+
+model Task {
+  id         Int        @id @default(autoincrement())
+  activity   String
+  frequency  Int
+  deviceId   Int
+  device     Device     @relation(fields: [deviceId], references: [id])
+
+  checkedTasks CheckedTask[]
 }

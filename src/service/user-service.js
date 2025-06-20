@@ -107,12 +107,29 @@ const userService = {
     }
 
     // Cek apakah sudah melakukan monitoring hari ini
-    const today = new Date().toISOString().split("T")[0];
-    const startOfDay = new Date(today);
-    startOfDay.setHours(0, 0, 0, 0);
+    const now = new Date();
 
-    const endOfDay = new Date(today);
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        0,
+        0,
+        0
+      )
+    );
+    const endOfDay = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        23,
+        59,
+        59,
+        999
+      )
+    );
 
     const monitoring = await prismaClient.monitoring.findFirst({
       where: {
