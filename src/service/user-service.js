@@ -167,9 +167,7 @@ const userService = {
   },
 
   getAllUsers: async () => {
-    return await prismaClient.user.findMany({
-      data: user,
-    });
+    return await prismaClient.user.findMany();
   },
 };
 
