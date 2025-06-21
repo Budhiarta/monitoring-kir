@@ -7,7 +7,7 @@ const publicRouter = new express.Router();
 publicRouter.post("/user", userController.register);
 publicRouter.post("/user/login", userController.login);
 publicRouter.post("/user/login-web", userController.loginWeb);
-publicRouter.post("/user/getAllUsers", userController.login);
+publicRouter.post("/user/getAllUsers", userController.getUsers);
 
 //Device
 publicRouter.get("/monitoring", monitoringController.getMonitoring);
