@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "node": "index.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -16,6 +17,7 @@
     "@prisma/client": "^6.5.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "joi": "^17.13.3",
