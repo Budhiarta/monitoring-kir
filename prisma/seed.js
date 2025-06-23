@@ -18,6 +18,14 @@ async function main() {
     skipDuplicates: true,
   });
 
+  await prisma.sparePart.createMany({
+    data: [
+      { name: "Filter Udara", qty: 1 },
+      { name: "Baterai AA", qty: 1 },
+      { name: "Filter Partikulat", qty: 1 },
+    ],
+  });
+
   // note
   // 1 = harian
   // 2 = mingguan

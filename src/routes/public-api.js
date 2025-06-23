@@ -2,6 +2,7 @@ import express from "express";
 import userController from "../controller/user-controller.js";
 import monitoringController from "../controller/monitoring-controller.js";
 import taskController from "../controller/task-controller.js";
+import sparePartController from "../controller/sparePart-controller.js";
 
 const publicRouter = new express.Router();
 //user
@@ -25,4 +26,8 @@ publicRouter.get(
   "/task/:deviceId/:frequency",
   taskController.getTaskByDeviceIdFrequency
 );
+
+//sparePart
+publicRouter.get("/spareParts", sparePartController.getSpareParts);
+publicRouter.put("/sparePart", sparePartController.updateSparePart);
 export { publicRouter };

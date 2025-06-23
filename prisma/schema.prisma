@@ -29,7 +29,8 @@ model Device {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  monitorings Monitoring[]  // 1 Device bisa punya banyak Monitoring
+  monitorings Monitoring[] 
+  reports Report[] // 1 Device bisa punya banyak Monitoring
 
   Task Task[]
 }
@@ -74,4 +75,21 @@ model Task {
   device     Device     @relation(fields: [deviceId], references: [id])
 
   checkedTasks CheckedTask[]
+}
+
+model SparePart {
+  id Int @id @default(autoincrement())
+  name String
+  qty Int
+}
+
+model Report {
+  id Int @id @default(autoincrement())
+  tester String
+  Date DateTime
+  deviceId   Int
+  device     Device     @relation(fields: [deviceId], references: [id])
+
+  Documentation String
+  Signature String
 }
