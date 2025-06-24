@@ -69,6 +69,7 @@ const taskService = {
             id: true,
             Tester: true,
             Date: true,
+            Documentation: true,
           },
         },
         task: {
