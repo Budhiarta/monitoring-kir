@@ -54,12 +54,16 @@ const taskService = {
   },
 
   getCheckedTaskByDate: async (date) => {
-    return await prismaClient.checkedTask.findMany({
+    const start = new Date(date);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    const data = await prismaClient.checkedTask.findMany({
       where: {
         monitoring: {
           Date: {
-            gte: startOfDay(date),
-            lte: endOfDay(date),
+            gte: start,
+            lte: end,
           },
         },
       },
@@ -69,22 +73,47 @@ const taskService = {
             id: true,
             Tester: true,
             Date: true,
-            Documentation: true,
-          },
-        },
-        task: {
-          select: {
-            id: true,
-            activity: true,
             device: {
               select: {
-                devicename: true, // atau apapun field di Device kamu
+                name: true,
               },
             },
           },
         },
+        task: {
+          select: {
+            activity: true,
+          },
+        },
       },
     });
+
+    // Group by date
+    const grouped = {};
+
+    for (const item of data) {
+      const dateKey = format(item.monitoring.Date, "yyyy-MM-dd");
+
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+
+      const existing = grouped[dateKey].find(
+        (x) => x.id === item.monitoring.id
+      );
+      if (existing) {
+        existing.details.push(item.task.activity);
+      } else {
+        grouped[dateKey].push({
+          id: item.monitoring.id,
+          tester: item.monitoring.Tester,
+          device: item.monitoring.device?.name || "Tidak diketahui",
+          details: [item.task.activity],
+        });
+      }
+    }
+
+    return grouped;
   },
 };
 
