@@ -29,9 +29,9 @@ export const getMonitoring = async (req, res) => {
 
 export const createMonitoring = async (req, res) => {
   try {
-    const { Tester, deviceName, ...otherData } = req.body;
+    const { Tester, ...otherData } = req.body;
 
-    if (!Tester || !deviceName) {
+    if (!Tester) {
       return res
         .status(400)
         .json({ error: "Tester dan deviceName wajib diisi" });
@@ -42,13 +42,6 @@ export const createMonitoring = async (req, res) => {
     });
     if (!user) {
       return res.status(404).json({ error: "User tidak ditemukan" });
-    }
-
-    const device = await prismaClient.device.findFirst({
-      where: { devicename: deviceName },
-    });
-    if (!device) {
-      return res.status(404).json({ error: "Device tidak ditemukan" });
     }
 
     const completeData = {
