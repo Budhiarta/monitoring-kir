@@ -29,9 +29,9 @@ export const getMonitoring = async (req, res) => {
 
 export const createMonitoring = async (req, res) => {
   try {
-    const { Tester, ...otherData } = req.body;
+    const { Tester, DeviceId, ...otherData } = req.body;
 
-    if (!Tester) {
+    if (!Tester || !DeviceId) {
       return res
         .status(400)
         .json({ error: "Tester dan deviceName wajib diisi" });
@@ -48,7 +48,7 @@ export const createMonitoring = async (req, res) => {
       ...otherData,
       Tester, // Simpan tester (username)
       userId: user.id, // Relasi user
-      deviceId: device.id, // Relasi device
+      deviceId: DeviceId, // Relasi device
     };
 
     const newMonitoring = await monitoringService.createMonitoring(
