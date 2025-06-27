@@ -3,6 +3,7 @@ import userController from "../controller/user-controller.js";
 import monitoringController from "../controller/monitoring-controller.js";
 import taskController from "../controller/task-controller.js";
 import sparePartController from "../controller/sparePart-controller.js";
+import deviceController from "../controller/device-controller.js";
 
 const publicRouter = new express.Router();
 //user
@@ -11,7 +12,7 @@ publicRouter.post("/user/login", userController.login);
 publicRouter.post("/user/login-web", userController.loginWeb);
 publicRouter.get("/user/getAllUsers", userController.getUsers);
 
-//Device
+//Monitoring
 publicRouter.get("/monitoring", monitoringController.getMonitoring);
 publicRouter.get("/monitoring/:id", monitoringController.getMonitoringById);
 publicRouter.post("/monitoring", monitoringController.createMonitoring);
@@ -31,3 +32,6 @@ publicRouter.get(
 publicRouter.get("/spareParts", sparePartController.getSpareParts);
 publicRouter.put("/sparePart", sparePartController.updateSparePart);
 export { publicRouter };
+
+//Device
+publicRouter.get("/devices", deviceController.getDevices);
