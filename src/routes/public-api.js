@@ -4,6 +4,7 @@ import monitoringController from "../controller/monitoring-controller.js";
 import taskController from "../controller/task-controller.js";
 import sparePartController from "../controller/sparePart-controller.js";
 import deviceController from "../controller/device-controller.js";
+import reportController from "../controller/report-controller.js";
 
 const publicRouter = new express.Router();
 //user
@@ -35,3 +36,9 @@ export { publicRouter };
 
 //Device
 publicRouter.get("/devices", deviceController.getDevices);
+
+//report
+publicRouter.post("/report", reportController.createReportController);
+publicRouter.get("/reports", reportController.getAllReportController);
+
+//test
