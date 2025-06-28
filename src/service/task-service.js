@@ -1,7 +1,5 @@
 import { prismaClient } from "../application/database.js";
 import { format } from "date-fns";
-import { ResponseError } from "../error/response-error.js";
-import { startOfDay, endOfDay } from "date-fns";
 
 const taskService = {
   createIsCheckedTask: async ({ taskId, monitoringId, checked }) => {
@@ -56,6 +54,7 @@ const taskService = {
 
   getCheckedTaskByDate: async (date) => {
     const start = new Date(date);
+    start.setHours(0, 0, 0, 0); // fix zona waktu
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
 
@@ -97,9 +96,7 @@ const taskService = {
       const monitoring = item.monitoring;
       const dateKey = format(monitoring.Date, "yyyy-MM-dd");
 
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
-      }
+      if (!grouped[dateKey]) grouped[dateKey] = [];
 
       const existing = grouped[dateKey].find((x) => x.id === monitoring.id);
 
@@ -109,7 +106,7 @@ const taskService = {
         grouped[dateKey].push({
           id: monitoring.id,
           tester: monitoring.Tester,
-          device: item.monitoring.device?.devicename || "Tidak diketahui",
+          device: monitoring.device?.devicename || "Tidak diketahui",
           documentation: monitoring.Documentation || "",
           signature: monitoring.Signature || "",
           details: [item.task.activity],
