@@ -78,7 +78,11 @@ export const getCheckedTaskByDate = async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error("Error fetching data:", error);
-    res.status(500).json({ error: "Gagal mengambil data task yang diceklis" });
+    res.status(500).json({
+      error: "Gagal mengambil data task yang diceklis",
+      detail: error.message,
+      stack: error.stack,
+    });
   }
 };
 

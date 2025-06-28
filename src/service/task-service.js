@@ -1,4 +1,5 @@
 import { prismaClient } from "../application/database.js";
+import { format } from "date-fns";
 import { ResponseError } from "../error/response-error.js";
 import { startOfDay, endOfDay } from "date-fns";
 
@@ -77,7 +78,7 @@ const taskService = {
             Signature: true,
             device: {
               select: {
-                name: true,
+                devicename: true,
               },
             },
           },
