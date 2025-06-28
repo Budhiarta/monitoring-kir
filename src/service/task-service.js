@@ -73,6 +73,8 @@ const taskService = {
             id: true,
             Tester: true,
             Date: true,
+            Documentation: true,
+            Signature: true,
             device: {
               select: {
                 name: true,
