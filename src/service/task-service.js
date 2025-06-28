@@ -109,7 +109,7 @@ const taskService = {
         grouped[dateKey].push({
           id: monitoring.id,
           tester: monitoring.Tester,
-          device: monitoring.device?.name || "Tidak diketahui",
+          device: item.monitoring.device?.devicename || "Tidak diketahui",
           documentation: monitoring.Documentation || "",
           signature: monitoring.Signature || "",
           details: [item.task.activity],
