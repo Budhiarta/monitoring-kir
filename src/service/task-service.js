@@ -1,5 +1,4 @@
 import { prismaClient } from "../application/database.js";
-import { format } from "date-fns";
 
 const taskService = {
   createIsCheckedTask: async ({ taskId, monitoringId, checked }) => {
@@ -53,10 +52,16 @@ const taskService = {
   },
 
   getCheckedTaskByDate: async (date) => {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0); // fix zona waktu
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
+    // Anggap `date` dalam format 'yyyy-MM-dd'
+    const [year, month, day] = date.split("-").map(Number);
+
+    // Buat tanggal dengan zona waktu Jakarta secara manual
+    const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+
+    // Geser waktu UTC ke +7 (Asia/Jakarta)
+    start.setUTCHours(start.getUTCHours() - 7);
+    end.setUTCHours(end.getUTCHours() - 7);
 
     const data = await prismaClient.checkedTask.findMany({
       where: {
@@ -94,7 +99,7 @@ const taskService = {
 
     for (const item of data) {
       const monitoring = item.monitoring;
-      const dateKey = format(monitoring.Date, "yyyy-MM-dd");
+      const dateKey = monitoring.Date.toISOString().split("T")[0];
 
       if (!grouped[dateKey]) grouped[dateKey] = [];
 
