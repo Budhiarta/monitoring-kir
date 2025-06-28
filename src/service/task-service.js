@@ -90,26 +90,27 @@ const taskService = {
       },
     });
 
-    // Group by date
     const grouped = {};
 
     for (const item of data) {
-      const dateKey = format(item.monitoring.Date, "yyyy-MM-dd");
+      const monitoring = item.monitoring;
+      const dateKey = format(monitoring.Date, "yyyy-MM-dd");
 
       if (!grouped[dateKey]) {
         grouped[dateKey] = [];
       }
 
-      const existing = grouped[dateKey].find(
-        (x) => x.id === item.monitoring.id
-      );
+      const existing = grouped[dateKey].find((x) => x.id === monitoring.id);
+
       if (existing) {
         existing.details.push(item.task.activity);
       } else {
         grouped[dateKey].push({
-          id: item.monitoring.id,
-          tester: item.monitoring.Tester,
-          device: item.monitoring.device?.name || "Tidak diketahui",
+          id: monitoring.id,
+          tester: monitoring.Tester,
+          device: monitoring.device?.name || "Tidak diketahui",
+          documentation: monitoring.Documentation || "",
+          signature: monitoring.Signature || "",
           details: [item.task.activity],
         });
       }
