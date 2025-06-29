@@ -107,21 +107,31 @@ const userService = {
       throw new ResponseError(401, "Username atau password salah");
     }
 
-    // ✅ Cek monitoring pada 21 Mei 2025 untuk deviceId 1–10
-    const targetDate = new Date(Date.UTC(2025, 4, 21)); // bulan 4 = Mei (zero-based)
-    const startOfDay = new Date(targetDate.setUTCHours(0, 0, 0, 0));
-    const endOfDay = new Date(Date.UTC(2025, 4, 21, 23, 59, 59, 999));
-    const requiredDeviceIds = Array.from({ length: 10 }, (_, i) => i + 1); // [1..10]
+    // ✅ Tanggal target (tanpa jam): 21 Mei 2025
+    const targetDate = "2025-05-21";
+
+    // ✅ Ambil semua monitoring dengan deviceId 1–10
+    const requiredDeviceIds = Array.from({ length: 10 }, (_, i) => i + 1);
 
     const monitorings = await prismaClient.monitoring.findMany({
       where: {
-        Date: { gte: startOfDay, lte: endOfDay },
         deviceId: { in: requiredDeviceIds },
       },
-      select: { deviceId: true },
+      select: {
+        deviceId: true,
+        Date: true,
+      },
     });
 
-    const monitoredDeviceIds = new Set(monitorings.map((m) => m.deviceId));
+    // ✅ Filter hanya monitoring yang terjadi di tanggal 21 Mei 2025 (tanpa jam)
+    const filtered = monitorings.filter((m) => {
+      const dateOnly = m.Date.toISOString().split("T")[0]; // "YYYY-MM-DD"
+      return dateOnly === targetDate;
+    });
+
+    const monitoredDeviceIds = new Set(filtered.map((m) => m.deviceId));
+
+    // ✅ Cek device yang belum termonitor
     const missingDevices = requiredDeviceIds.filter(
       (id) => !monitoredDeviceIds.has(id)
     );
@@ -129,7 +139,7 @@ const userService = {
     if (missingDevices.length > 0) {
       throw new ResponseError(
         403,
-        `Monitoring belum lengkap. Belum ada data untuk device ID: ${missingDevices.join(
+        `Monitoring belum lengkap untuk tanggal ${targetDate}. Belum ada data untuk device ID: ${missingDevices.join(
           ", "
         )}.`
       );
