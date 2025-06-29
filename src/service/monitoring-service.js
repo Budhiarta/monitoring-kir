@@ -16,13 +16,14 @@ const monitoringService = {
   },
 
   createMonitoring: async (data) => {
-    // Pastikan tanggal diparsing sebagai waktu lokal (jam 00:00)
-    const parsedDate = new Date(`${data.Date}T00:00:00`);
+    // Buat tanggal dengan jam 00:00 sesuai zona waktu lokal
+    const localDate = new Date(data.Date);
+    localDate.setHours(0, 0, 0, 0);
 
     return prismaClient.monitoring.create({
       data: {
         Tester: data.Tester,
-        Date: parsedDate,
+        Date: localDate,
         MonitoringType: data.MonitoringType,
         Documentation: data.Documentation || "",
         Status: data.Status,
