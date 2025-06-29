@@ -80,12 +80,12 @@ const userService = {
   },
 
   loginWeb: async (req) => {
+    // Validasi input
     const loginRequest = validate(loginUserValidation, req);
 
+    // Ambil data user berdasarkan email
     const user = await prismaClient.user.findUnique({
-      where: {
-        email: loginRequest.username,
-      },
+      where: { email: loginRequest.username },
       select: {
         id: true,
         username: true,
@@ -94,59 +94,60 @@ const userService = {
       },
     });
 
+    // Validasi user dan password
     if (!user) {
-      throw new ResponseError(401, "username or password invalid");
+      throw new ResponseError(401, "Username atau password salah");
     }
 
     const isPasswordValid = await bcrypt.compare(
       loginRequest.password,
       user.password
     );
+
     if (!isPasswordValid) {
-      throw new ResponseError(401, "username or password invalid");
+      throw new ResponseError(401, "Username atau password salah");
     }
 
-    // Cek apakah sudah melakukan monitoring hari ini
-    const now = new Date();
+    // Tanggal 21 Mei 2025 (format UTC)
+    const targetDate = new Date(Date.UTC(2025, 4, 21)); // Bulan 4 = Mei
+    const startOfDay = new Date(Date.UTC(2025, 4, 21, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(2025, 4, 21, 23, 59, 59, 999));
 
-    const startOfDay = new Date(
-      Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        0,
-        0,
-        0
-      )
-    );
-    const endOfDay = new Date(
-      Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        23,
-        59,
-        59,
-        999
-      )
-    );
+    // Device ID yang wajib dicek
+    const requiredDeviceIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-    const monitoring = await prismaClient.monitoring.findFirst({
+    // Ambil semua monitoring pada tanggal tersebut dengan deviceId 1–10
+    const monitorings = await prismaClient.monitoring.findMany({
       where: {
         Date: {
           gte: startOfDay,
           lte: endOfDay,
         },
+        deviceId: {
+          in: requiredDeviceIds,
+        },
+      },
+      select: {
+        deviceId: true,
       },
     });
 
-    if (!monitoring) {
+    // Ambil deviceId yang sudah dimonitoring (unik)
+    const monitoredDeviceIds = [...new Set(monitorings.map((m) => m.deviceId))];
+
+    // Cek apakah semua deviceId sudah dimonitoring
+    const isComplete = requiredDeviceIds.every((id) =>
+      monitoredDeviceIds.includes(id)
+    );
+
+    if (!isComplete) {
       throw new ResponseError(
         403,
-        "Anda belum melakukan monitoring hari ini. Silakan monitoring melalui aplikasi."
+        "Anda belum melakukan monitoring, silakan melakukan monitoring"
       );
     }
 
+    // Buat token JWT
     const token = jwt.sign(
       {
         username: user.username,
@@ -156,8 +157,9 @@ const userService = {
       { expiresIn: "1h" }
     );
 
+    // Return data ke frontend
     return {
-      message: "login web successfull",
+      message: "Login web berhasil",
       token,
       user: {
         username: user.username,
