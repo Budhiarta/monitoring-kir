@@ -52,23 +52,10 @@ const taskService = {
   },
 
   getCheckedTaskByDate: async (date) => {
-    const [year, month, day] = date.split("-").map(Number);
-
-    // Buat waktu di zona waktu Jakarta (+7) manual
-    const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-    const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
-
-    // Koreksi arah geser: tambahkan 7 jam agar jadi waktu Jakarta
-    start.setUTCHours(start.getUTCHours() + 7);
-    end.setUTCHours(end.getUTCHours() + 7);
-
     const data = await prismaClient.checkedTask.findMany({
       where: {
         monitoring: {
-          Date: {
-            gte: start,
-            lte: end,
-          },
+          // Ambil semua, filter manual
         },
       },
       include: {
@@ -98,7 +85,10 @@ const taskService = {
 
     for (const item of data) {
       const monitoring = item.monitoring;
+
       const dateKey = format(monitoring.Date, "yyyy-MM-dd");
+
+      if (dateKey !== date) continue; // 💡 Filter HANYA tanggal yang dipilih
 
       if (!grouped[dateKey]) grouped[dateKey] = [];
 
@@ -110,7 +100,7 @@ const taskService = {
         grouped[dateKey].push({
           id: monitoring.id,
           tester: monitoring.Tester,
-          device: monitoring.device?.name || "Tidak diketahui",
+          device: monitoring.device?.devicename || "Tidak diketahui",
           documentation: monitoring.Documentation || "",
           signature: monitoring.Signature || "",
           details: [item.task.activity],
@@ -118,6 +108,7 @@ const taskService = {
       }
     }
 
+    console.log("📦 Grouped data:", grouped);
     return grouped;
   },
 };
