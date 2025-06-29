@@ -98,7 +98,7 @@ const taskService = {
 
     for (const item of data) {
       const monitoring = item.monitoring;
-      const dateKey = monitoring.Date.toISOString().split("T")[0];
+      const dateKey = format(monitoring.Date, "yyyy-MM-dd");
 
       if (!grouped[dateKey]) grouped[dateKey] = [];
 
@@ -110,7 +110,7 @@ const taskService = {
         grouped[dateKey].push({
           id: monitoring.id,
           tester: monitoring.Tester,
-          device: monitoring.device?.devicename || "Tidak diketahui",
+          device: monitoring.device?.name || "Tidak diketahui",
           documentation: monitoring.Documentation || "",
           signature: monitoring.Signature || "",
           details: [item.task.activity],
