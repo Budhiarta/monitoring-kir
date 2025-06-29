@@ -54,9 +54,7 @@ const taskService = {
   getCheckedTaskByDate: async (date) => {
     const data = await prismaClient.checkedTask.findMany({
       where: {
-        monitoring: {
-          // Ambil semua, filter manual
-        },
+        monitoring: {},
       },
       include: {
         monitoring: {
@@ -85,17 +83,20 @@ const taskService = {
 
     for (const item of data) {
       const monitoring = item.monitoring;
+      const activity = item.task?.activity;
+
+      if (!monitoring?.Date || !activity) continue;
 
       const dateKey = format(monitoring.Date, "yyyy-MM-dd");
 
-      if (dateKey !== date) continue; // 💡 Filter HANYA tanggal yang dipilih
+      if (dateKey !== date) continue;
 
       if (!grouped[dateKey]) grouped[dateKey] = [];
 
       const existing = grouped[dateKey].find((x) => x.id === monitoring.id);
 
       if (existing) {
-        existing.details.push(item.task.activity);
+        existing.details.push(activity);
       } else {
         grouped[dateKey].push({
           id: monitoring.id,
@@ -103,7 +104,7 @@ const taskService = {
           device: monitoring.device?.devicename || "Tidak diketahui",
           documentation: monitoring.Documentation || "",
           signature: monitoring.Signature || "",
-          details: [item.task.activity],
+          details: [activity],
         });
       }
     }
