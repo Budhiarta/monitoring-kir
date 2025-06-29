@@ -80,10 +80,10 @@ const userService = {
   },
 
   loginWeb: async (req) => {
-    // Validasi input
+    // Validasi input dari client
     const loginRequest = validate(loginUserValidation, req);
 
-    // Ambil data user berdasarkan email
+    // Ambil user berdasarkan email (username)
     const user = await prismaClient.user.findUnique({
       where: { email: loginRequest.username },
       select: {
@@ -94,7 +94,7 @@ const userService = {
       },
     });
 
-    // Validasi user dan password
+    // Validasi user & password
     if (!user) {
       throw new ResponseError(401, "Username atau password salah");
     }
@@ -103,51 +103,40 @@ const userService = {
       loginRequest.password,
       user.password
     );
-
     if (!isPasswordValid) {
       throw new ResponseError(401, "Username atau password salah");
     }
 
-    // Tanggal 21 Mei 2025 (format UTC)
-    const targetDate = new Date(Date.UTC(2025, 4, 21)); // Bulan 4 = Mei
+    // Tanggal target: 21 Mei 2025 (ingat: bulan 4 = Mei karena 0-based)
     const startOfDay = new Date(Date.UTC(2025, 4, 21, 0, 0, 0));
     const endOfDay = new Date(Date.UTC(2025, 4, 21, 23, 59, 59, 999));
-
-    // Device ID yang wajib dicek
     const requiredDeviceIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-    // Ambil semua monitoring pada tanggal tersebut dengan deviceId 1–10
+    // Ambil semua monitoring untuk device 1–10 pada tanggal tersebut
     const monitorings = await prismaClient.monitoring.findMany({
       where: {
-        Date: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-        deviceId: {
-          in: requiredDeviceIds,
-        },
+        Date: { gte: startOfDay, lte: endOfDay },
+        deviceId: { in: requiredDeviceIds },
       },
-      select: {
-        deviceId: true,
-      },
+      select: { deviceId: true },
     });
 
-    // Ambil deviceId yang sudah dimonitoring (unik)
+    // Ambil ID unik dari hasil monitoring
     const monitoredDeviceIds = [...new Set(monitorings.map((m) => m.deviceId))];
 
-    // Cek apakah semua deviceId sudah dimonitoring
-    const isComplete = requiredDeviceIds.every((id) =>
+    // Pastikan semua device yang diwajibkan sudah termonitor
+    const allDevicesMonitored = requiredDeviceIds.every((id) =>
       monitoredDeviceIds.includes(id)
     );
 
-    if (!isComplete) {
+    if (!allDevicesMonitored) {
       throw new ResponseError(
         403,
-        "Anda belum melakukan monitoring, silakan melakukan monitoring"
+        "Monitoring belum lengkap untuk semua device pada 21 Mei 2025."
       );
     }
 
-    // Buat token JWT
+    // Buat token dan kembalikan response
     const token = jwt.sign(
       {
         username: user.username,
@@ -157,7 +146,6 @@ const userService = {
       { expiresIn: "1h" }
     );
 
-    // Return data ke frontend
     return {
       message: "Login web berhasil",
       token,
