@@ -80,10 +80,10 @@ const userService = {
   },
 
   loginWeb: async (req) => {
-    // Validasi input dari client
+    // ✅ Validasi input
     const loginRequest = validate(loginUserValidation, req);
 
-    // Ambil user berdasarkan email (username)
+    // ✅ Cari user berdasarkan email
     const user = await prismaClient.user.findUnique({
       where: { email: loginRequest.username },
       select: {
@@ -94,11 +94,11 @@ const userService = {
       },
     });
 
-    // Validasi user & password
     if (!user) {
       throw new ResponseError(401, "Username atau password salah");
     }
 
+    // ✅ Verifikasi password
     const isPasswordValid = await bcrypt.compare(
       loginRequest.password,
       user.password
@@ -107,12 +107,12 @@ const userService = {
       throw new ResponseError(401, "Username atau password salah");
     }
 
-    // Tanggal target: 21 Mei 2025 (ingat: bulan 4 = Mei karena 0-based)
-    const startOfDay = new Date(Date.UTC(2025, 4, 21, 0, 0, 0));
+    // ✅ Cek monitoring pada 21 Mei 2025 untuk deviceId 1–10
+    const targetDate = new Date(Date.UTC(2025, 4, 21)); // bulan 4 = Mei (zero-based)
+    const startOfDay = new Date(targetDate.setUTCHours(0, 0, 0, 0));
     const endOfDay = new Date(Date.UTC(2025, 4, 21, 23, 59, 59, 999));
-    const requiredDeviceIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const requiredDeviceIds = Array.from({ length: 10 }, (_, i) => i + 1); // [1..10]
 
-    // Ambil semua monitoring untuk device 1–10 pada tanggal tersebut
     const monitorings = await prismaClient.monitoring.findMany({
       where: {
         Date: { gte: startOfDay, lte: endOfDay },
@@ -121,22 +121,21 @@ const userService = {
       select: { deviceId: true },
     });
 
-    // Ambil ID unik dari hasil monitoring
-    const monitoredDeviceIds = [...new Set(monitorings.map((m) => m.deviceId))];
-
-    // Pastikan semua device yang diwajibkan sudah termonitor
-    const allDevicesMonitored = requiredDeviceIds.every((id) =>
-      monitoredDeviceIds.includes(id)
+    const monitoredDeviceIds = new Set(monitorings.map((m) => m.deviceId));
+    const missingDevices = requiredDeviceIds.filter(
+      (id) => !monitoredDeviceIds.has(id)
     );
 
-    if (!allDevicesMonitored) {
+    if (missingDevices.length > 0) {
       throw new ResponseError(
         403,
-        "Monitoring belum lengkap untuk semua device pada 21 Mei 2025."
+        `Monitoring belum lengkap. Belum ada data untuk device ID: ${missingDevices.join(
+          ", "
+        )}.`
       );
     }
 
-    // Buat token dan kembalikan response
+    // ✅ Buat token JWT
     const token = jwt.sign(
       {
         username: user.username,
@@ -146,6 +145,7 @@ const userService = {
       { expiresIn: "1h" }
     );
 
+    // ✅ Return hasil
     return {
       message: "Login web berhasil",
       token,
