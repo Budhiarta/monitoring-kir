@@ -16,25 +16,21 @@ const monitoringService = {
   },
 
   createMonitoring: async (data) => {
-    // Buat tanggal dengan jam 00:00 sesuai zona waktu lokal
-    const localDate = new Date(data.Date);
-    localDate.setHours(0, 0, 0, 0);
+    // Ambil hanya tanggal dan buat waktu lokal jam 00:00
+    const [year, month, day] = data.Date.split("-").map(Number);
+    const localDate = new Date(year, month - 1, day); // bulan dimulai dari 0
 
     return prismaClient.monitoring.create({
       data: {
         Tester: data.Tester,
-        Date: localDate,
+        Date: localDate, // disimpan aman jam 00:00 lokal
         MonitoringType: data.MonitoringType,
         Documentation: data.Documentation || "",
         Status: data.Status,
         Sumary: data.Sumary || "",
         Signature: data.Signature || "",
-        user: {
-          connect: { id: data.userId },
-        },
-        device: {
-          connect: { id: data.deviceId },
-        },
+        user: { connect: { id: data.userId } },
+        device: { connect: { id: data.deviceId } },
       },
     });
   },
