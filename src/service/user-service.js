@@ -80,10 +80,8 @@ const userService = {
   },
 
   loginWeb: async (req) => {
-    // ✅ Validasi input
     const loginRequest = validate(loginUserValidation, req);
 
-    // ✅ Cari user berdasarkan email
     const user = await prismaClient.user.findUnique({
       where: { email: loginRequest.username },
       select: {
@@ -98,7 +96,6 @@ const userService = {
       throw new ResponseError(401, "Username atau password salah");
     }
 
-    // ✅ Verifikasi password
     const isPasswordValid = await bcrypt.compare(
       loginRequest.password,
       user.password
@@ -107,12 +104,11 @@ const userService = {
       throw new ResponseError(401, "Username atau password salah");
     }
 
-    // ✅ Tanggal target (tanpa jam): 21 Mei 2025
+    // ✅ Target tanggal: 2025-05-21
     const targetDate = "2025-05-21";
+    const requiredDeviceIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-    // ✅ Ambil semua monitoring dengan deviceId 1–10
-    const requiredDeviceIds = Array.from({ length: 10 }, (_, i) => i + 1);
-
+    // ✅ Ambil semua monitoring untuk device 1–10
     const monitorings = await prismaClient.monitoring.findMany({
       where: {
         deviceId: { in: requiredDeviceIds },
@@ -123,14 +119,13 @@ const userService = {
       },
     });
 
+    // ✅ Filter berdasarkan tanggal saja (YYYY-MM-DD)
     const filtered = monitorings.filter((m) => {
-      const dateOnly = m.Date.toISOString().split("T")[0]; // "YYYY-MM-DD"
+      const dateOnly = m.Date.toISOString().split("T")[0];
       return dateOnly === targetDate;
     });
 
     const monitoredDeviceIds = new Set(filtered.map((m) => m.deviceId));
-
-    // ✅ Cek device yang belum termonitor
     const missingDevices = requiredDeviceIds.filter(
       (id) => !monitoredDeviceIds.has(id)
     );
@@ -144,7 +139,7 @@ const userService = {
       );
     }
 
-    // ✅ Buat token JWT
+    // ✅ Buat JWT token
     const token = jwt.sign(
       {
         username: user.username,
@@ -154,7 +149,6 @@ const userService = {
       { expiresIn: "1h" }
     );
 
-    // ✅ Return hasil
     return {
       message: "Login web berhasil",
       token,
