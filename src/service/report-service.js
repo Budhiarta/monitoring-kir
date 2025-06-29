@@ -2,33 +2,40 @@ import { prismaClient } from "../application/database.js";
 
 const reportService = {
   createReport: async (data) => {
-    const { tester, date, devicename, Documentation, Signature } = data; // ✅ Ubah 'Date' jadi 'date'
-    const parsedDate = new Date(date); // ✅ Sekarang aman
+    const {
+      tester,
+      Date: rawDate,
+      devicename,
+      Documentation,
+      Signature,
+    } = data;
 
-    console.log("Parsed date:", parsedDate);
+    // Validasi dan parsing tanggal
+    const parsedDate = new Date(rawDate);
     if (isNaN(parsedDate.getTime())) {
-      throw new Error("Format tanggal tidak valid");
+      throw new Error(`Format tanggal tidak valid: ${rawDate}`);
     }
 
+    // Cari device berdasarkan nama
     const device = await prismaClient.device.findFirst({
-      where: { devicename: devicename },
+      where: { devicename },
     });
 
     if (!device) {
       throw new Error(`Device '${devicename}' tidak ditemukan`);
     }
 
+    // Buat report
     return prismaClient.report.create({
       data: {
         tester,
         Date: parsedDate,
         deviceId: device.id,
-        Documentation,
-        Signature,
+        Documentation: Documentation || "Tidak ada dokumentasi",
+        Signature: Signature || "Tanda tangan kosong",
       },
     });
   },
-
   getAllReport: async () => {
     const reports = await prismaClient.report.findMany({
       include: {
