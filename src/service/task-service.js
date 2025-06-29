@@ -1,4 +1,5 @@
 import { prismaClient } from "../application/database.js";
+import { format } from "date-fns";
 
 const taskService = {
   createIsCheckedTask: async ({ taskId, monitoringId, checked }) => {
@@ -51,10 +52,11 @@ const taskService = {
     });
   },
 
-  getCheckedTaskByDate: async (date) => {
+  getCheckedTaskByDate: async (targetDate) => {
+    // Ambil semua checked task beserta relasi monitoring dan task
     const data = await prismaClient.checkedTask.findMany({
       where: {
-        monitoring: {},
+        monitoring: {}, // Prisma butuh ini agar include monitoring
       },
       include: {
         monitoring: {
@@ -85,18 +87,24 @@ const taskService = {
       const monitoring = item.monitoring;
       const activity = item.task?.activity;
 
+      // Validasi field penting
       if (!monitoring?.Date || !activity) continue;
 
       const dateKey = format(monitoring.Date, "yyyy-MM-dd");
 
-      if (dateKey !== date) continue;
+      // Filter hanya tanggal yang cocok
+      if (dateKey !== targetDate) continue;
 
+      // Inisialisasi array jika belum ada
       if (!grouped[dateKey]) grouped[dateKey] = [];
 
-      const existing = grouped[dateKey].find((x) => x.id === monitoring.id);
+      // Cek apakah monitoring.id sudah ada dalam daftar tanggal
+      const existingEntry = grouped[dateKey].find(
+        (entry) => entry.id === monitoring.id
+      );
 
-      if (existing) {
-        existing.details.push(activity);
+      if (existingEntry) {
+        existingEntry.details.push(activity);
       } else {
         grouped[dateKey].push({
           id: monitoring.id,
