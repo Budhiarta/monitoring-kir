@@ -105,7 +105,7 @@ const userService = {
     }
 
     // ✅ Target tanggal: 2025-05-21
-    const targetDate = "2025-05-21";
+    const targetDate = "2025-05-19";
     const requiredDeviceIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     // ✅ Ambil semua monitoring untuk device 1–10
