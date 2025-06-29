@@ -16,17 +16,24 @@ const monitoringService = {
   },
 
   createMonitoring: async (data) => {
+    // Pastikan tanggal diparsing sebagai waktu lokal (jam 00:00)
+    const parsedDate = new Date(`${data.Date}T00:00:00`);
+
     return prismaClient.monitoring.create({
       data: {
         Tester: data.Tester,
-        Date: new Date(data.Date),
+        Date: parsedDate,
         MonitoringType: data.MonitoringType,
-        Documentation: data.Documentation,
+        Documentation: data.Documentation || "",
         Status: data.Status,
-        Sumary: data.Sumary,
-        Signature: data.Signature,
-        user: { connect: { id: data.userId } },
-        device: { connect: { id: data.deviceId } },
+        Sumary: data.Sumary || "",
+        Signature: data.Signature || "",
+        user: {
+          connect: { id: data.userId },
+        },
+        device: {
+          connect: { id: data.deviceId },
+        },
       },
     });
   },
