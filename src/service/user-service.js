@@ -123,7 +123,6 @@ const userService = {
       },
     });
 
-    // ✅ Filter hanya monitoring yang terjadi di tanggal 21 Mei 2025 (tanpa jam)
     const filtered = monitorings.filter((m) => {
       const dateOnly = m.Date.toISOString().split("T")[0]; // "YYYY-MM-DD"
       return dateOnly === targetDate;
