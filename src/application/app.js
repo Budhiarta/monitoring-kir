@@ -6,7 +6,7 @@ import cors from "cors";
 export const app = express();
 app.use(express.json());
 
-app.use("/uploads", express.static("public"));
+app.use("../uploads", express.static("public"));
 app.use(cors());
 app.use(publicRouter);
 app.use(errorMiddleware);
